@@ -12,46 +12,46 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 //DÉCLARATION PACKAGES ET IMPORTS
-
 /**
  *
  * @author
  */
-
-
 public class LANManager implements Runnable {
 
     //Déclaration des variables à faire
-
     private static LANManager instance;
-    private DataOutputStream out;
-    private DataInputStream in ;
+    private DataOutputStream outServer;
+    private DataInputStream inServer;
+    private DataOutputStream outClient;
+    private DataInputStream inClient;
     private boolean isHost;
     private String ipAdress;
     private NES nes;
 
     private Socket clientServerSocket = null; //pour envoyer des donnees vers le serveur
-
     private Socket clientSocket = null;
     private ServerSocket serverSocket = null;
     private String ROMpath;
     private MultiplayerDialog clientOrHost;
     /*private BufferedInputStream = null;*/
     private int controllerbyte;
-    private NetworkController controller1, controller2;
+    private ControllerInterface controller1, controller2;
 
     //(LANManger.getInstance()).init(...);
     public final static LANManager getInstance() {
-        if(instance == null){
+        if (instance == null) {
             instance = new LANManager();
         }
         return instance;
     }
 
-    public void init(boolean isHost, String ipAddress, NES nes) {
+    public void init(boolean isHost, String ipAddress, NES nes) throws IOException {
         this.isHost = isHost;
         this.ipAdress = ipAddress;
         this.nes = nes;
+        initHost();
+        initClient();
+        initStream();
         //clientOrHost = new MultiplayerDialog();
     }
 
@@ -60,16 +60,13 @@ public class LANManager implements Runnable {
         try {
             serverSocket = new ServerSocket(9999);
 
-            while (true){
-                clientSocket = serverSocket.accept();
-    /*            in = new DataInputStream(clientSocket.getOutputStream());
-                out = new DataOutputStream(clientSocket.getInputStream());*/
+            while (true) {
+                clientServerSocket = serverSocket.accept();
 
-               /* getLatchByte(getcontroller1());
+                /* getLatchByte(getcontroller1());
                 getLatchByte(getcontroller1());*/
             }
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -78,38 +75,41 @@ public class LANManager implements Runnable {
     private void initClient() {
         try {
             clientSocket = new Socket("localhost", 9999);
+            controller1 = new NetworkController();
+            controller2 = new NetworkController();
 
-            /*     in = new DataInputStream(clientSocket.getLatchByte(getcontroller2()));
-                out = new DataOutputStream(clientSocket.getbyte(getcontroller2()));*/
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
     }
 
     private void initStream() throws IOException {
-/*        this.out = new DataInputStream(clientSocket.getOutputStream());
-        this.in = new DataOutputStream(clientSocket.getInputStream());;
-        controller1 = new NetworkController();
-        controller2 = new NetworkController();*/
+
+        inServer = new DataInputStream(clientServerSocket.getInputStream());
+        outServer = new DataOutputStream(clientServerSocket.getOutputStream());
+        this.inClient = new DataInputStream(clientSocket.getInputStream());
+        this.outClient = new DataOutputStream(clientSocket.getOutputStream());
+
     }
 
     public void controllerSendReceive() throws IOException {
-        int buffer = 0;
-/*        if(clientOrHost == isHost) {
-            controllerbyte = in.read((ControllerImpl)controller1.getLatchByte());
-            //clientSocket = out.controllerbyte(buffer);
-            out.write(controllerbyte);
-            out.flush();
-            ((NetworkController)controllernum).setNetByte = in.clientSocket;
-            controller2 = controllernum;
-        }else{
-            controllerbyte = in.read((ControllerImpl)controller2.getLatchByte());
-            serverSocket = out.controllerbyte(buffer);
-            ((NetworkController)controllernum).setNetByte = in.serverSocket;
-            controller1 = controllernum;
-        }*/
+
+        if (!isHost) {
+            controllerbyte = ((ControllerImpl) controller2).getLatchByte();
+            outClient.write(controllerbyte);
+            outClient.flush();
+            NetworkController controllerNet = new NetworkController();
+            controllerNet.setNetByte(inClient.readInt());
+            controller2 = controllerNet;
+        } else {
+            controllerbyte = ((ControllerImpl) controller1).getLatchByte();
+            outServer.write(controllerbyte);
+            outServer.flush();
+            NetworkController controllerNet = new NetworkController();
+            controllerNet.setNetByte(inServer.readInt());
+            controller1 = controllerNet;
+        }
     }
 
     public void runEmulation(boolean state) {
@@ -118,7 +118,7 @@ public class LANManager implements Runnable {
 
     @Override
     public void run() {
-/*        (new Thread(new runEmulation))).startEventQueue();
+        /*        (new Thread(new runEmulation))).startEventQueue();
         boolean ready = false;
         try {
             if (reading.equals("ready")) {
@@ -133,12 +133,11 @@ public class LANManager implements Runnable {
         }*/
     }
 
-     /* Send "ready" state and launch a Thread for receive the same state in run() method
-      */
-
+    /* Send "ready" state and launch a Thread for receive the same state in run() method
+     */
     public void ready() {
         try {
-            this.out.writeUTF("ready");
+            this.outServer.writeUTF("ready");
             System.out.println("Ready out!");
             new Thread(getInstance()).start();
 
@@ -148,24 +147,31 @@ public class LANManager implements Runnable {
     }
 
     public void closeConnection() {
-/*        if(connected!=null){
+        if (clientServerSocket != null) {
             try {
-                this.connected.in.close();
-                this.connected.out.close();
+                clientServerSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }*/
+        }
+        if (clientSocket != null) {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public void resetConnection() {
-        try {
-            this.in.close();
-            this.out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void resetConnection() throws IOException {
+        closeConnection();
+        if (clientServerSocket != null) {
+            initHost();
         }
-        this.initHost();
+        if (clientSocket != null) {
+            initClient();
+        }
+        initStream();
     }
 
     public void setPathROM(String ROMpath) {

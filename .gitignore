@@ -1,1 +1,6 @@
 .idea
+nbproject
+build.xml
+manifest.mf
+/dist/
+/build/

@@ -113,7 +113,7 @@ public class MultiplayerDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Fermer");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -129,14 +129,14 @@ public class MultiplayerDialog extends javax.swing.JDialog {
             }
         });
         selectROMButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectROMButton1ActionPerformed(evt);
             }
         });
 
         jButton2.setText("Connect...");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
@@ -187,7 +187,7 @@ public class MultiplayerDialog extends javax.swing.JDialog {
             }
         });
         ipHostTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ipHostTextFieldActionPerformed(evt);
             }
         });
@@ -199,7 +199,7 @@ public class MultiplayerDialog extends javax.swing.JDialog {
             }
         });
         selectROMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectROMButtonActionPerformed(evt);
             }
         });
@@ -209,7 +209,7 @@ public class MultiplayerDialog extends javax.swing.JDialog {
         jButton1.setText("Start Server...");
         jButton1.setToolTipText("");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
